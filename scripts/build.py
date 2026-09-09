@@ -11,6 +11,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 
 from helpers import cargar_mes, fmt_soles, InformeMes  # noqa: E402
 from config_mes import NARRATIVA  # noqa: E402
+from plan_sostenibilidad import cargar_agosto_plan  # noqa: E402
 
 OUT_DIR = ROOT / "site"
 DATA_DIR = ROOT / "data"
@@ -39,8 +40,8 @@ CICLOS = [
     {
         "ciclo": "2026-2",
         "meses": [
-            {"mes": "Agosto", "slug": "agosto", "xlsx": "transacciones_agosto.xlsx"},
-            {"mes": "Septiembre (prueba)", "slug": "septiembre-prueba", "prueba": True},
+            {"mes": "Agosto", "slug": "agosto",
+             "xlsx": "180DC_PUCP_Plan_Sostenibilidad_2026-II.xlsx", "formato": "plan_agosto"},
         ],
     },
 ]
@@ -73,6 +74,8 @@ def fmt_fecha_corta(fecha_str):
     if not fecha_str:
         return ""
     s = str(fecha_str).strip()
+    if s.startswith("Semana del "):
+        return s
     # rango
     if "-" in s and s.count("/") >= 4:
         parts = [p.strip() for p in s.split("-")]
@@ -102,6 +105,9 @@ def svg_donut(labels, values, colores, total_label, size=240):
     start = -math.pi/2
     for v, c in zip(values, colores):
         frac = v/total
+        if frac == 1:
+            paths.append(f'<circle cx="{cx}" cy="{cy}" r="{(r_out+r_in)/2}" fill="none" stroke="{c}" stroke-width="{r_out-r_in}"/>')
+            continue
         end = start + frac * 2*math.pi
         x1, y1 = cx + r_out*math.cos(start), cy + r_out*math.sin(start)
         x2, y2 = cx + r_out*math.cos(end),   cy + r_out*math.sin(end)
@@ -338,7 +344,7 @@ def render_mes(info: InformeMes, slug: str, narrativa: dict, xlsx_filename: str,
         <span class="stat-label">Saldo inicial</span>
         <span class="stat-value">{fmt_soles(info.saldo_inicial)}</span>
       </div>''']
-    if info.ingresos > 0 or narrativa.get("prueba"):
+    if info.ingresos > 0:
         stat_items.append(f'''<div class="stat">
         <span class="stat-label">Ingresos</span>
         <span class="stat-value verde">{fmt_soles(info.ingresos)}</span>
@@ -454,13 +460,16 @@ def render_mes(info: InformeMes, slug: str, narrativa: dict, xlsx_filename: str,
         """
 
     # ---- Descarga
+    fuente_detalle = narrativa.get(
+        "fuente_detalle",
+        "Verifica línea por línea. Los datos del informe se generan\n           automáticamente a partir de este archivo.",
+    )
     descarga_html = f"""
     <div class="descarga">
       <div class="descarga-info">
         <p class="eyebrow">Archivo fuente</p>
-        <h4>Registro de Transacciones — {info.mes} {info.ciclo}</h4>
-        <p>Verifica línea por línea. Los datos del informe se generan
-           automáticamente a partir de este archivo.</p>
+        <h4>{esc(narrativa.get('fuente_titulo', f'Registro de Transacciones — {info.mes} {info.ciclo}'))}</h4>
+        <p>{esc(fuente_detalle)}</p>
       </div>
       <a class="btn-descarga" href="../downloads/{esc(xlsx_filename)}" download>
         <span>Descargar Excel</span>
@@ -468,8 +477,29 @@ def render_mes(info: InformeMes, slug: str, narrativa: dict, xlsx_filename: str,
       </a>
     </div>
     """
-    if narrativa.get("prueba"):
-        descarga_html = '<p class="muted">Reporte de prueba sin movimientos. No corresponde a un registro contable real ni tiene Excel descargable.</p>'
+    conciliacion_html = ""
+    if narrativa.get("semanas"):
+        filas = "".join(
+            f'<tr><th scope="row">{esc(s["semana"])} · {esc(s["fecha"])}</th>'
+            f'<td>{fmt_soles(s["ingresos"])}</td><td>{fmt_soles(s["gastos"])}</td>'
+            f'<td>{fmt_soles(s["disponible"])}</td><td>{fmt_soles(s["deuda"])}</td>'
+            f'<td>{fmt_soles(s["neto"])}</td></tr>' for s in narrativa["semanas"]
+        )
+        conciliacion_html = f'''
+        <section class="section">
+          <p class="section-eyebrow">Conciliación</p>
+          <h3 class="section-title-big">Disponible y deuda por semana</h3>
+          <p class="prose">{esc(narrativa["criterio_semanal"])}</p>
+          <div class="weekly-scroll" tabindex="0" role="region" aria-label="Resumen semanal de agosto">
+            <table class="weekly-table">
+              <caption>Agosto según las semanas S1–S3 del plan. Importes en soles.</caption>
+              <thead><tr><th scope="col">Semana</th><th scope="col">Ingresos</th>
+                <th scope="col">Gastos pagados</th><th scope="col">Disponible</th>
+                <th scope="col">Deuda pendiente</th><th scope="col">Disponible menos deuda</th></tr></thead>
+              <tbody>{filas}</tbody>
+            </table>
+          </div>
+        </section>'''
 
     # ---- Info box inversión
     info_box_inv = ""
@@ -504,7 +534,7 @@ def render_mes(info: InformeMes, slug: str, narrativa: dict, xlsx_filename: str,
     {hero_saldo}
     {stat_strip}
 
-    {"" if info.ingresos == 0 and not narrativa.get("prueba") else f'''<section class="section">
+    {"" if info.ingresos == 0 else f'''<section class="section">
       <div class="section-head">
         <div>
           <p class="section-eyebrow">Movimientos</p>
@@ -533,7 +563,7 @@ def render_mes(info: InformeMes, slug: str, narrativa: dict, xlsx_filename: str,
       <div class="tx-list">{''.join(filas_egreso)}</div>
     </section>
 
-    {deuda_html}
+    {deuda_html}{conciliacion_html}
 
     <section class="section">
       <p class="section-eyebrow">Visualización</p>
@@ -588,6 +618,15 @@ def render_index(ciclos_render: list[dict]) -> str:
     delta_ciclo = saldo_actual - saldo_inicio
     delta_sign = "+" if delta_ciclo >= 0 else "−"
     delta_cls = "up" if delta_ciclo >= 0 else "down"
+    deuda_resumen = ""
+    narrativa_actual = actual["meses"][-1].get("narrativa", {})
+    if narrativa_actual.get("semanas"):
+        deuda_actual = narrativa_actual["deuda"]["monto"]
+        deuda_resumen = (
+            f'<p class="prose">Deuda pendiente: <strong>{fmt_soles(deuda_actual)}</strong>. '
+            f'Disponible menos deuda: <strong>{fmt_soles(saldo_actual - deuda_actual)}</strong>. '
+            'El saldo actual corresponde al dinero disponible antes de descontar la deuda.</p>'
+        )
 
     # ---- Hero
     hero = f"""
@@ -603,6 +642,7 @@ def render_index(ciclos_render: list[dict]) -> str:
         <div>
           <p class="eyebrow">Saldo actual</p>
           <div class="hero-saldo-big">{fmt_soles(saldo_actual)}</div>
+          {deuda_resumen}
           <p class="hero-saldo-delta {delta_cls}">
             <span class="arrow">{'↑' if delta_ciclo >= 0 else '↓'}</span>
             {delta_sign} {fmt_soles(abs(delta_ciclo))} desde el inicio del ciclo
@@ -791,22 +831,6 @@ def main():
     for c in CICLOS:
         meses_ok, infos = [], []
         for cfg in c["meses"]:
-            if cfg.get("prueba"):
-                from dataclasses import replace
-                anterior = infos[-1] if infos else next(
-                    x["infos"][-1] for x in reversed(ciclos_render) if x["infos"]
-                )
-                infos.append(replace(
-                    anterior, mes=cfg["mes"], ciclo=c["ciclo"],
-                    actualizacion="Versión de prueba", saldo_inicial=anterior.saldo_final,
-                    ingresos=0.0, egresos_op=0.0, inversion=0.0,
-                    df=anterior.df.iloc[:0].copy(),
-                    df_ingresos=anterior.df_ingresos.iloc[:0].copy(),
-                    df_egresos=anterior.df_egresos.iloc[:0].copy(),
-                    df_inversion=anterior.df_inversion.iloc[:0].copy(),
-                ))
-                meses_ok.append(cfg)
-                continue
             xlsx_path = DATA_DIR / cfg["xlsx"]
             if not xlsx_path.exists():
                 # El mes está registrado pero su Excel todavía no llega:
@@ -815,13 +839,18 @@ def main():
                 continue
             shutil.copy2(xlsx_path, downloads_dir / cfg["xlsx"])
             n_archivos += 1
-            infos.append(cargar_mes(str(xlsx_path), cfg["mes"], ciclo=c["ciclo"]))
+            if cfg.get("formato") == "plan_agosto":
+                info, narrativa = cargar_agosto_plan(xlsx_path, NARRATIVA[cfg["mes"]])
+                cfg = {**cfg, "narrativa": narrativa}
+            else:
+                info = cargar_mes(str(xlsx_path), cfg["mes"], ciclo=c["ciclo"])
+            infos.append(info)
             meses_ok.append(cfg)
         ciclos_render.append({"ciclo": c["ciclo"], "meses": meses_ok, "infos": infos})
 
     for c in ciclos_render:
         for cfg, info in zip(c["meses"], c["infos"]):
-            html = render_mes(info, cfg["slug"], NARRATIVA.get(cfg["mes"], {}),
+            html = render_mes(info, cfg["slug"], cfg.get("narrativa", NARRATIVA.get(cfg["mes"], {})),
                               cfg.get("xlsx", ""), c["meses"])
             out = OUT_DIR / "meses" / f"{cfg['slug']}.html"
             out.write_text(html, encoding="utf-8")

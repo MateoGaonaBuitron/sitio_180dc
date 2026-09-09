@@ -373,55 +373,31 @@ JULIO = {
 }
 
 # Agosto 2026-2 ---------------------------------------------------------------
-# Primer mes del ciclo 2026-2. Arranca con el saldo de cierre del 2026-1
-# (S/ 92.87), que figura en la fila "Ord. = 0" del Excel del mes.
+# Los importes y filas se leen del plan semanal original.
 AGOSTO = {
-    "fuentes_ingresos": [],
-    "egresos": [
-        {
-            "titulo": "Catering — 180 Talks (saldo pendiente)",
-            "monto": 38.62,
-            "fecha": "23/08/2026",
-            "para_que": (
-                "Pago del saldo pendiente del servicio de catering del evento "
-                "180 Talks, realizado en julio. Con esto queda cancelado el "
-                "servicio con el proveedor."
-            ),
-            "categoria_ui": "Eventos",
-            "es_inversion": False,
-            "icono": "🥗",
-        },
-    ],
+    "actualizacion": "09/09/2026",
+    "fuente_titulo": "Plan de Sostenibilidad Financiera 2026-II — Excel original",
+    "fuente_detalle": "Descarga el archivo completo. Agosto se obtiene de las semanas S1–S3 de la hoja Flujo de Caja. La deuda heredada se informa aparte de los pagos realizados. Consulta la conciliación semanal.",
+    "criterio_semanal": "Se respeta la agrupación del Excel: agosto comprende S1, S2 y S3, incluida la semana del 31/08 que se extiende a septiembre. Las fechas indican el inicio de la semana, no el día exacto de cada operación. El saldo del plan descuenta la deuda heredada; aquí se muestran por separado el disponible y el disponible menos deuda.",
     "nota_cierre": (
-        "Agosto abre el ciclo **2026-2** con el saldo de cierre del ciclo "
-        "anterior (S/ 92.87). Fue un mes **sin ingresos y con un único "
-        "movimiento**: el pago de S/ 38.62 por el saldo pendiente del catering "
-        "del **180 Talks**, con lo que queda cancelado el servicio con el "
-        "proveedor. El préstamo de S/ 305.50 que cubrió el grueso de ese "
-        "catering **sigue vigente** y pendiente de reposición."
+        "Agosto parte de **S/ 92.87 disponibles al 17 de agosto**. Los ingresos del stand y las rifas, "
+        "menos los gastos de dulces del stand, aumentan el disponible. "
+        "La **deuda heredada del ciclo 2026-1 sigue pendiente** y se presenta por separado. "
+        "El pago de **S/ 38.62 programado para el 23 de agosto no se ejecutó**, por lo que se retiró del registro de gastos. "
+        "El archivo fuente comienza el 17 de agosto; no aporta un detalle de movimientos del 1 al 16."
     ),
     "deuda": {
-        "monto": 305.50,
-        "titulo": "Catering — 180 Talks (18 de julio)",
+        "titulo": "Catering — 180 Talks (deuda heredada del 2026-1)",
         "detalle": (
-            "Amanda Gomez adelantó S/ 305.50 para cubrir el catering del evento "
-            "180 Talks. El pago se realizó directamente al proveedor y no pasó "
-            "por la cuenta bancaria de la agrupación. Al cierre de agosto el "
-            "monto **sigue pendiente de reposición**, sin intereses. Es el "
-            "único préstamo vigente."
+            "Adelanto de Amanda Gomez para el catering del 180 Talks de julio, pendiente de reposición. "
+            "El plan lo incorpora en S1 como DEUDA heredada del 2026-I. Su registro no representa "
+            "un nuevo desembolso de agosto; se descuenta únicamente al calcular el disponible menos deuda."
         ),
     },
 }
 
 # Registro global por mes
 NARRATIVA = {
-    "Septiembre (prueba)": {
-        "prueba": True,
-        "fuentes_ingresos": [],
-        "egresos": [],
-        "nota_cierre": "Versión de prueba: septiembre registra **S/ 0.00 de ingresos y S/ 0.00 de gastos**. Se conserva el saldo de agosto de S/ 54.25. Este reporte es una simulación y no constituye un cierre contable real.",
-        "deuda": AGOSTO["deuda"],
-    },
     "Marzo": MARZO,
     "Abril": ABRIL,
     "Mayo": MAYO,

@@ -40,6 +40,14 @@
   --transition:   .2s ease;
 }
 
+.weekly-scroll { overflow-x: auto; margin-top: 20px; }
+.weekly-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.weekly-table caption { text-align: left; color: var(--gray-700); padding-bottom: 12px; }
+.weekly-table th, .weekly-table td { padding: 14px 12px; border-bottom: 1px solid var(--gray-300); text-align: right; }
+.weekly-table thead { background: var(--brand-soft); }
+.weekly-table th:first-child { text-align: left; min-width: 190px; }
+.weekly-table td { white-space: nowrap; font-variant-numeric: tabular-nums; }
+
 *, *::before, *::after { box-sizing: border-box; }
 
 html {

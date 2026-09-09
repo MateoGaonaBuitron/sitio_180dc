@@ -50,14 +50,28 @@ borra al pasar de ciclo.
 
 ## 3. Actualizar / corregir un mes que YA existe
 
-### Reporte temporal de prueba
+### Agosto 2026-2: fuente semanal
 
-El ciclo 2026-2 incluye **Septiembre (prueba)**, una simulación sin ingresos
-ni gastos que conserva el saldo del mes anterior. Se configura con
-`"prueba": True` en `CICLOS` y en su entrada de `NARRATIVA`; no requiere
-Excel ni ofrece descarga. Para retirarlo, elimina ambas entradas y ejecuta
-`python scripts/build.py`. Para publicar septiembre real, registra el mes
-con su Excel siguiendo la sección 4.
+Agosto usa `data/180DC_PUCP_Plan_Sostenibilidad_2026-II.xlsx`, que se ofrece
+íntegro para descargar. `scripts/plan_sostenibilidad.py` lee S1–S3 de
+`Flujo de Caja`, siguiendo la agrupación de `Supuestos` y `Proyecciones`.
+La semana del 31/08 se incluye completa; no se conocen fechas individuales.
+Los importes del detalle, gráficos y resumen se calculan desde esas celdas.
+
+La deuda heredada de S/ 305.50 sigue pendiente: se separa de los pagos.
+El disponible es S/ 119.87 (92.87 + 49 − 22), y el disponible menos deuda
+es −S/ 185.63, que coincide con el saldo del plan. El pago programado de
+S/ 38.62 del 23/08 no se ejecutó y queda excluido. El antiguo
+`data/transacciones_agosto.xlsx` se conserva solo como antecedente sustituido;
+no alimenta el portal ni se publica. Septiembre de prueba fue retirado.
+
+Para actualizar este mes, modifica el plan y guárdalo recalculado en Excel,
+manteniendo su estructura. El adaptador verifica los totales semanales y
+se detiene si no cuadran o cambia el formato. Las otras hojas y semanas
+futuras no generan reportes automáticamente. Los textos explicativos de
+agosto permanecen en `config_mes.py`.
+
+### Meses con el formato habitual
 
 1. Abre el Excel del mes en `data/` (ej. `data/transacciones_mayo.xlsx`) y
    corrige lo que haga falta. Guarda.

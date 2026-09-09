@@ -50,6 +50,15 @@ borra al pasar de ciclo.
 
 ## 3. Actualizar / corregir un mes que YA existe
 
+### Reporte temporal de prueba
+
+El ciclo 2026-2 incluye **Septiembre (prueba)**, una simulación sin ingresos
+ni gastos que conserva el saldo del mes anterior. Se configura con
+`"prueba": True` en `CICLOS` y en su entrada de `NARRATIVA`; no requiere
+Excel ni ofrece descarga. Para retirarlo, elimina ambas entradas y ejecuta
+`python scripts/build.py`. Para publicar septiembre real, registra el mes
+con su Excel siguiendo la sección 4.
+
 1. Abre el Excel del mes en `data/` (ej. `data/transacciones_mayo.xlsx`) y
    corrige lo que haga falta. Guarda.
 

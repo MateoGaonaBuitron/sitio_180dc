@@ -415,6 +415,13 @@ AGOSTO = {
 
 # Registro global por mes
 NARRATIVA = {
+    "Septiembre (prueba)": {
+        "prueba": True,
+        "fuentes_ingresos": [],
+        "egresos": [],
+        "nota_cierre": "Versión de prueba: septiembre registra **S/ 0.00 de ingresos y S/ 0.00 de gastos**. Se conserva el saldo de agosto de S/ 54.25. Este reporte es una simulación y no constituye un cierre contable real.",
+        "deuda": AGOSTO["deuda"],
+    },
     "Marzo": MARZO,
     "Abril": ABRIL,
     "Mayo": MAYO,

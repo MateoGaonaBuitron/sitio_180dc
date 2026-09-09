@@ -40,6 +40,7 @@ CICLOS = [
         "ciclo": "2026-2",
         "meses": [
             {"mes": "Agosto", "slug": "agosto", "xlsx": "transacciones_agosto.xlsx"},
+            {"mes": "Septiembre (prueba)", "slug": "septiembre-prueba", "prueba": True},
         ],
     },
 ]
@@ -337,7 +338,7 @@ def render_mes(info: InformeMes, slug: str, narrativa: dict, xlsx_filename: str,
         <span class="stat-label">Saldo inicial</span>
         <span class="stat-value">{fmt_soles(info.saldo_inicial)}</span>
       </div>''']
-    if info.ingresos > 0:
+    if info.ingresos > 0 or narrativa.get("prueba"):
         stat_items.append(f'''<div class="stat">
         <span class="stat-label">Ingresos</span>
         <span class="stat-value verde">{fmt_soles(info.ingresos)}</span>
@@ -467,6 +468,8 @@ def render_mes(info: InformeMes, slug: str, narrativa: dict, xlsx_filename: str,
       </a>
     </div>
     """
+    if narrativa.get("prueba"):
+        descarga_html = '<p class="muted">Reporte de prueba sin movimientos. No corresponde a un registro contable real ni tiene Excel descargable.</p>'
 
     # ---- Info box inversión
     info_box_inv = ""
@@ -501,7 +504,7 @@ def render_mes(info: InformeMes, slug: str, narrativa: dict, xlsx_filename: str,
     {hero_saldo}
     {stat_strip}
 
-    {"" if info.ingresos == 0 else f'''<section class="section">
+    {"" if info.ingresos == 0 and not narrativa.get("prueba") else f'''<section class="section">
       <div class="section-head">
         <div>
           <p class="section-eyebrow">Movimientos</p>
@@ -788,6 +791,22 @@ def main():
     for c in CICLOS:
         meses_ok, infos = [], []
         for cfg in c["meses"]:
+            if cfg.get("prueba"):
+                from dataclasses import replace
+                anterior = infos[-1] if infos else next(
+                    x["infos"][-1] for x in reversed(ciclos_render) if x["infos"]
+                )
+                infos.append(replace(
+                    anterior, mes=cfg["mes"], ciclo=c["ciclo"],
+                    actualizacion="Versión de prueba", saldo_inicial=anterior.saldo_final,
+                    ingresos=0.0, egresos_op=0.0, inversion=0.0,
+                    df=anterior.df.iloc[:0].copy(),
+                    df_ingresos=anterior.df_ingresos.iloc[:0].copy(),
+                    df_egresos=anterior.df_egresos.iloc[:0].copy(),
+                    df_inversion=anterior.df_inversion.iloc[:0].copy(),
+                ))
+                meses_ok.append(cfg)
+                continue
             xlsx_path = DATA_DIR / cfg["xlsx"]
             if not xlsx_path.exists():
                 # El mes está registrado pero su Excel todavía no llega:
@@ -803,7 +822,7 @@ def main():
     for c in ciclos_render:
         for cfg, info in zip(c["meses"], c["infos"]):
             html = render_mes(info, cfg["slug"], NARRATIVA.get(cfg["mes"], {}),
-                              cfg["xlsx"], c["meses"])
+                              cfg.get("xlsx", ""), c["meses"])
             out = OUT_DIR / "meses" / f"{cfg['slug']}.html"
             out.write_text(html, encoding="utf-8")
             print(f"OK -> {out.relative_to(ROOT)}")
@@ -815,7 +834,7 @@ def main():
     # Limpieza: borra paginas y descargas que ya no corresponden a ningun mes
     # registrado (p. ej. un mes que se renombro o se quito de CICLOS).
     slugs_ok = {cfg["slug"] for c in ciclos_render for cfg in c["meses"]}
-    xlsx_ok = {cfg["xlsx"] for c in ciclos_render for cfg in c["meses"]}
+    xlsx_ok = {cfg["xlsx"] for c in ciclos_render for cfg in c["meses"] if "xlsx" in cfg}
     for f in (OUT_DIR / "meses").glob("*.html"):
         if f.stem not in slugs_ok:
             f.unlink()

@@ -90,7 +90,7 @@ def cargar_agosto_plan(path, narrativa):
         entradas = frame[frame["Tipo"] == "Ingreso"].copy()
         salidas = frame[frame["Tipo"] == "Egreso"].copy()
         info = InformeMes(
-            mes="Agosto", ciclo="2026-2", responsable="Área financiera",
+            mes="Agosto", ciclo="2026-2", responsable=narrativa["responsable"],
             actualizacion=narrativa["actualizacion"], saldo_inicial=float(inicial),
             ingresos=float(entradas["Monto"].sum()), egresos_op=float(salidas["Monto"].sum()),
             inversion=0.0, saldo_final=float(disponible), df=frame,

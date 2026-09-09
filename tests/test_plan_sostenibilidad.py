@@ -47,6 +47,7 @@ class PlanTests(unittest.TestCase):
         self.assertIn("S/ 119.87", html)
         self.assertIn("S/ -185.63", html)
         self.assertIn("no se ejecutó", html)
+        self.assertIn('Responsable de actualización: <strong>Mateo Gaona</strong>', html)
         self.assertIn(SOURCE.name, html)
         calculo = html.split('<dl class="calc-list">', 1)[1].split('</dl>', 1)[0]
         self.assertLess(calculo.index("Egresos operativos"), calculo.index("Deuda pendiente"))
@@ -68,6 +69,14 @@ class PlanTests(unittest.TestCase):
                 if not url.scheme and not url.netloc and url.path:
                     self.assertTrue((page.parent / unquote(url.path)).exists(), f"Enlace roto: {page.name}: {link}")
             self.assertNotIn("septiembre-prueba", page.read_text(encoding="utf-8"))
+
+    def test_inicio_y_tarjeta_muestran_saldo_despues_de_deuda(self):
+        html = (ROOT / "site/index.html").read_text(encoding="utf-8")
+        self.assertIn('<div class="hero-saldo-big">S/ -185.63</div>', html)
+        self.assertIn('<div class="mes-saldo-num">S/ -185.63</div>', html)
+        self.assertIn('Saldo actual después de deuda', html)
+        self.assertNotIn('class="hero-saldo-big">S/ 119.87', html)
+        self.assertNotIn('class="mes-saldo-num">S/ 119.87', html)
 
     def test_grafico_categoria_unica(self):
         svg = svg_donut(["Stand"], [22], ["#7AB929"], "S/ 22.00")

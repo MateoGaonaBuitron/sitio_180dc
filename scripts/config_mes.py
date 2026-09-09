@@ -375,6 +375,7 @@ JULIO = {
 # Agosto 2026-2 ---------------------------------------------------------------
 # Los importes y filas se leen del plan semanal original.
 AGOSTO = {
+    "responsable": "Mateo Gaona",
     "actualizacion": "09/09/2026",
     "fuente_titulo": "Plan de Sostenibilidad Financiera 2026-II — Excel original",
     "fuente_detalle": "Descarga el archivo completo. Agosto se obtiene de las semanas S1–S3 de la hoja Flujo de Caja. La deuda heredada se informa aparte de los pagos realizados. Consulta la conciliación semanal.",

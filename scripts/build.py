@@ -629,18 +629,21 @@ def render_index(ciclos_render: list[dict]) -> str:
     total_inv = sum(i.inversion for i in infos)
     saldo_inicio = infos[0].saldo_inicial
     saldo_actual = infos[-1].saldo_final
-    delta_ciclo = saldo_actual - saldo_inicio
-    delta_sign = "+" if delta_ciclo >= 0 else "−"
-    delta_cls = "up" if delta_ciclo >= 0 else "down"
+    saldo_titulo = "Saldo actual"
     deuda_resumen = ""
     narrativa_actual = actual["meses"][-1].get("narrativa", {})
     if narrativa_actual.get("semanas"):
         deuda_actual = narrativa_actual["deuda"]["monto"]
         deuda_resumen = (
-            f'<p class="prose">Deuda pendiente: <strong>{fmt_soles(deuda_actual)}</strong>. '
-            f'Disponible menos deuda: <strong>{fmt_soles(saldo_actual - deuda_actual)}</strong>. '
-            'El saldo actual corresponde al dinero disponible antes de descontar la deuda.</p>'
+            f'<p class="prose">Disponible antes de deuda: <strong>{fmt_soles(saldo_actual)}</strong>. '
+            f'Deuda pendiente: <strong>{fmt_soles(deuda_actual)}</strong>. '
+            'El saldo mostrado descuenta esta deuda, que sigue pendiente de pago.</p>'
         )
+        saldo_actual = round(saldo_actual - deuda_actual, 2)
+        saldo_titulo = "Saldo actual después de deuda"
+    delta_ciclo = saldo_actual - saldo_inicio
+    delta_sign = "+" if delta_ciclo >= 0 else "−"
+    delta_cls = "up" if delta_ciclo >= 0 else "down"
 
     # ---- Hero
     hero = f"""
@@ -654,7 +657,7 @@ def render_index(ciclos_render: list[dict]) -> str:
       </p>
       <div class="hero-saldo-strip">
         <div>
-          <p class="eyebrow">Saldo actual</p>
+          <p class="eyebrow">{saldo_titulo}</p>
           <div class="hero-saldo-big">{fmt_soles(saldo_actual)}</div>
           {deuda_resumen}
           <p class="hero-saldo-delta {delta_cls}">
@@ -696,7 +699,13 @@ def render_index(ciclos_render: list[dict]) -> str:
     def _cards(meses, lista):
       out = []
       for idx, (info, cfg) in enumerate(zip(lista, meses), 1):
-        delta_mes = info.saldo_final - info.saldo_inicial
+        contenido = cfg.get("narrativa", {})
+        saldo_tarjeta = info.saldo_final
+        titulo_tarjeta = "Saldo final"
+        if contenido.get("semanas"):
+            saldo_tarjeta = round(saldo_tarjeta - contenido["deuda"]["monto"], 2)
+            titulo_tarjeta = "Saldo final después de deuda"
+        delta_mes = saldo_tarjeta - info.saldo_inicial
         d_sign = "+" if delta_mes >= 0 else "−"
         d_cls = "up" if delta_mes >= 0 else "down"
         out.append(f"""
@@ -709,8 +718,8 @@ def render_index(ciclos_render: list[dict]) -> str:
             <span class="mes-arrow">→</span>
           </div>
           <div class="mes-card-saldo">
-            <p class="eyebrow">Saldo final</p>
-            <div class="mes-saldo-num">{fmt_soles(info.saldo_final)}</div>
+            <p class="eyebrow">{titulo_tarjeta}</p>
+            <div class="mes-saldo-num">{fmt_soles(saldo_tarjeta)}</div>
             <p class="mes-delta {d_cls}">
               <span class="arrow">{'↑' if delta_mes >= 0 else '↓'}</span>
               {d_sign} {fmt_soles(abs(delta_mes))}

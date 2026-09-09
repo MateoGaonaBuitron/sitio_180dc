@@ -4,7 +4,10 @@ Sitio web que publica, mes a mes, en qué se gasta el dinero de la agrupación.
 Está hecho para mantenerse **sin saber programar**: editas un Excel, escribes
 unas descripciones, ejecutas un comando y subes los cambios con GitHub Desktop.
 
-🔗 **Sitio publicado:** https://av-gomez.github.io/sitio_180dc/
+🔗 **Portal de este repositorio:** https://MateoGaonaBuitron.github.io/sitio_180dc/
+
+El portal de `av-gomez` pertenece al repositorio original y no se actualiza
+al subir cambios a `MateoGaonaBuitron/sitio_180dc`.
 
 ---
 
@@ -19,7 +22,7 @@ El sitio se arma a partir de **dos fuentes**:
 
 Un comando (`python scripts/build.py`) junta ambos y genera las páginas web
 dentro de la carpeta `site/`. Al subir los cambios a GitHub, el sitio se
-publica solo.
+regenera, verifica y publica solo mediante GitHub Actions.
 
 > ⚠️ **Importante:** los números **siempre** salen del Excel. Las descripciones
 > que escribes en `config_mes.py` deben coincidir, fila por fila, con ese Excel.
@@ -64,6 +67,7 @@ es −S/ 185.63, que coincide con el saldo del plan.
 La sección Cálculo de agosto resta la deuda debajo de los egresos operativos
 y muestra **Saldo final después de deuda: −S/ 185.63**. El disponible de
 caja de S/ 119.87 se indica por separado, sin registrar la deuda como pagada.
+El inicio y la tarjeta de agosto también muestran −S/ 185.63 después de deuda.
 
 El pago programado de
 S/ 38.62 del 23/08 no se ejecutó y queda excluido. El antiguo
@@ -348,9 +352,13 @@ sitio_180dc/
 - **"python no se reconoce…"** → Python no quedó en el PATH. Reinstálalo
   marcando "Add Python to PATH".
 - **"No module named pandas/openpyxl"** → ejecuta `pip install -r requirements.txt`.
-- **Cambié algo pero el sitio no se actualiza** → ¿ejecutaste `python
-  scripts/build.py` **antes** de hacer Commit/Push? El sitio publica lo que hay
-  en `site/`, y esa carpeta solo cambia cuando corres el comando.
+- **Cambié algo pero el sitio no se actualiza** → sube todos los cambios
+  (`data/`, `scripts/`, `site/`, `tests/` y `.github/workflows/`) con GitHub
+  Desktop. GitHub Actions regenera y verifica el sitio antes de publicarlo.
+  Revisa que la ejecución del último commit termine en verde y abre el portal
+  de `MateoGaonaBuitron`, no el de `av-gomez`. Si sigues viendo la versión
+  anterior, recarga con Ctrl+F5. Para actualizar la vista local, ejecuta
+  `python scripts/build.py`.
 - **El total no coincide con la suma de las filas** → algún monto en
   `config_mes.py` no coincide con el del Excel. Recuerda: los totales salen del
   Excel; tus descripciones deben reflejar esas mismas filas.

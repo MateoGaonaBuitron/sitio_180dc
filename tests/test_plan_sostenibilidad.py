@@ -48,6 +48,10 @@ class PlanTests(unittest.TestCase):
         self.assertIn("S/ -185.63", html)
         self.assertIn("no se ejecutó", html)
         self.assertIn(SOURCE.name, html)
+        calculo = html.split('<dl class="calc-list">', 1)[1].split('</dl>', 1)[0]
+        self.assertLess(calculo.index("Egresos operativos"), calculo.index("Deuda pendiente"))
+        self.assertIn('Saldo final después de deuda</dt><dd>S/ -185.63</dd>', calculo)
+        self.assertIn('Disponible antes de deuda: <strong>S/ 119.87</strong>', html)
 
     def test_enlaces_locales(self):
         class Links(HTMLParser):

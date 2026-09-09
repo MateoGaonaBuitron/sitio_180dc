@@ -310,8 +310,22 @@ def render_fila(*, titulo, monto, fecha, categoria, descripcion, tipo,
 # =============================================================================
 def render_mes(info: InformeMes, slug: str, narrativa: dict, xlsx_filename: str,
                meses_ciclo: list) -> str:
+    # El plan semanal presenta el saldo después de la deuda pendiente.
+    # El disponible de caja se conserva en InformeMes para no registrar un pago ficticio.
+    deuda_calculo = narrativa.get("deuda") if narrativa.get("semanas") else None
+    saldo_mostrado = round(info.saldo_final - (deuda_calculo["monto"] if deuda_calculo else 0), 2)
+    saldo_titulo = "Saldo final después de deuda" if deuda_calculo else "Saldo final del mes"
+    total_titulo = "Saldo final después de deuda" if deuda_calculo else "Saldo final"
+    fila_deuda = (
+        f'<div class="op"><dt><span class="op-sign ambar">−</span> Deuda pendiente</dt>'
+        f'<dd>{fmt_soles(deuda_calculo["monto"])}</dd></div>' if deuda_calculo else ""
+    )
+    nota_disponible = (
+        f'<p class="prose">Disponible antes de deuda: <strong>{fmt_soles(info.saldo_final)}</strong>. '
+        'La deuda sigue pendiente de pago.</p>' if deuda_calculo else ""
+    )
     # delta de saldo
-    delta = info.saldo_final - info.saldo_inicial
+    delta = saldo_mostrado - info.saldo_inicial
     delta_sign = "+" if delta >= 0 else "−"
     delta_cls = "up" if delta >= 0 else "down"
 
@@ -319,8 +333,8 @@ def render_mes(info: InformeMes, slug: str, narrativa: dict, xlsx_filename: str,
     hero_saldo = f"""
     <section class="hero-saldo">
       <div class="hero-saldo-main">
-        <p class="eyebrow">Saldo final del mes</p>
-        <div class="hero-saldo-num">{fmt_soles(info.saldo_final)}</div>
+        <p class="eyebrow">{saldo_titulo}</p>
+        <div class="hero-saldo-num">{fmt_soles(saldo_mostrado)}</div>{nota_disponible}
         <p class="hero-saldo-delta {delta_cls}">
           <span class="arrow">{'↑' if delta >= 0 else '↓'}</span>
           {delta_sign} {fmt_soles(abs(delta))} vs. saldo inicial
@@ -331,9 +345,9 @@ def render_mes(info: InformeMes, slug: str, narrativa: dict, xlsx_filename: str,
         <dl class="calc-list">
           <div><dt>Saldo inicial</dt><dd>{fmt_soles(info.saldo_inicial)}</dd></div>
           {"" if info.ingresos == 0 else f'<div class="op"><dt><span class="op-sign verde">+</span> Ingresos</dt><dd>{fmt_soles(info.ingresos)}</dd></div>'}
-          <div class="op"><dt><span class="op-sign rojo">−</span> Egresos operativos</dt><dd>{fmt_soles(info.egresos_op)}</dd></div>
+          <div class="op"><dt><span class="op-sign rojo">−</span> Egresos operativos</dt><dd>{fmt_soles(info.egresos_op)}</dd></div>{fila_deuda}
           {"" if info.inversion == 0 else f'<div class="op"><dt><span class="op-sign ambar">−</span> Inversión IME</dt><dd>{fmt_soles(info.inversion)}</dd></div>'}
-          <div class="total"><dt>Saldo final</dt><dd>{fmt_soles(info.saldo_final)}</dd></div>
+          <div class="total"><dt>{total_titulo}</dt><dd>{fmt_soles(saldo_mostrado)}</dd></div>
         </dl>
       </div>
     </section>

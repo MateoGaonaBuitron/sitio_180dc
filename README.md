@@ -60,7 +60,12 @@ Los importes del detalle, gráficos y resumen se calculan desde esas celdas.
 
 La deuda heredada de S/ 305.50 sigue pendiente: se separa de los pagos.
 El disponible es S/ 119.87 (92.87 + 49 − 22), y el disponible menos deuda
-es −S/ 185.63, que coincide con el saldo del plan. El pago programado de
+es −S/ 185.63, que coincide con el saldo del plan.
+La sección Cálculo de agosto resta la deuda debajo de los egresos operativos
+y muestra **Saldo final después de deuda: −S/ 185.63**. El disponible de
+caja de S/ 119.87 se indica por separado, sin registrar la deuda como pagada.
+
+El pago programado de
 S/ 38.62 del 23/08 no se ejecutó y queda excluido. El antiguo
 `data/transacciones_agosto.xlsx` se conserva solo como antecedente sustituido;
 no alimenta el portal ni se publica. Septiembre de prueba fue retirado.

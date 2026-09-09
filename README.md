@@ -61,16 +61,18 @@ Agosto usa `data/180DC_PUCP_Plan_Sostenibilidad_2026-II.xlsx`, que se ofrece
 La semana del 31/08 se incluye completa; no se conocen fechas individuales.
 Los importes del detalle, gráficos y resumen se calculan desde esas celdas.
 
-La deuda heredada de S/ 305.50 sigue pendiente: se separa de los pagos.
+La deuda heredada total es S/ 344.12: préstamo de Amanda Gomez por S/ 305.50
+(fila 27) y deuda con la UP por catering de 180 Talks 2026-1 de S/ 38.62
+(fila 29). Ambas se registran en S1, pendientes de pago. La fila 29 se
+incorporó al Excel corregido y se recalcularon los saldos y proyecciones.
 El disponible es S/ 119.87 (92.87 + 49 − 22), y el disponible menos deuda
-es −S/ 185.63, que coincide con el saldo del plan.
+es −S/ 224.25, que coincide con el saldo del plan.
 La sección Cálculo de agosto resta la deuda debajo de los egresos operativos
-y muestra **Saldo final después de deuda: −S/ 185.63**. El disponible de
+y muestra **Saldo final después de deuda: −S/ 224.25**. El disponible de
 caja de S/ 119.87 se indica por separado, sin registrar la deuda como pagada.
-El inicio y la tarjeta de agosto también muestran −S/ 185.63 después de deuda.
+El inicio y la tarjeta de agosto también muestran −S/ 224.25 después de deuda.
 
-El pago programado de
-S/ 38.62 del 23/08 no se ejecutó y queda excluido. El antiguo
+Los S/ 38.62 se reconocen como pasivo heredado, sin sumarlos a gastos pagados. El antiguo
 `data/transacciones_agosto.xlsx` se conserva solo como antecedente sustituido;
 no alimenta el portal ni se publica. Septiembre de prueba fue retirado.
 

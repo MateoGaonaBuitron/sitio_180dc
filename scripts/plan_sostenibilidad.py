@@ -33,7 +33,7 @@ def cargar_agosto_plan(path, narrativa):
             "C5": "S1", "D5": "S2", "E5": "S3",
             "C6": "17/08", "D6": "24/08", "E6": "31/08",
             "A7": "SALDO INICIAL", "A24": "Total Ingresos",
-            "A27": "DEUDA", "A42": "Total Egresos", "A45": "SALDO FINAL",
+            "A27": "DEUDA", "A29": "DEUDA UP", "A42": "Total Egresos", "A45": "SALDO FINAL",
         }.items():
             if sheet[coordinate].value != expected:
                 raise ValueError(f"Cambió el formato del plan en {coordinate}; revisar el adaptador")
@@ -45,12 +45,12 @@ def cargar_agosto_plan(path, narrativa):
             semana = sheet.cell(5, col).value
             fecha = f"Semana del {sheet.cell(6, col).value}/2026"
             ingresos, gastos = Decimal("0"), Decimal("0")
-            deuda_semana = dinero(27, col)
+            deuda_semana = dinero(27, col) + dinero(29, col)
             if deuda_semana < 0:
                 raise ValueError("Revisar el tratamiento de la deuda: se detectó una reducción")
             for tipo, rango in (("Ingreso", range(9, 24)), ("Egreso", range(27, 42))):
                 for row in rango:
-                    if row == 27:
+                    if row in (27, 29):
                         continue
                     monto = dinero(row, col)
                     if not monto:
@@ -59,7 +59,7 @@ def cargar_agosto_plan(path, narrativa):
                     concepto = sheet.cell(row, 2).value
                     if monto < 0 or not categoria or not concepto:
                         raise ValueError(f"Revisar concepto o monto de la fila {row}")
-                    detalle = f"{concepto}. Registro semanal {semana}; el Excel no especifica el día del movimiento."
+                    detalle = str(concepto)
                     rows.append({"Tipo": tipo, "Monto": float(monto), "Categoria": categoria,
                                  "Descripcion": concepto, "Fecha": fecha, "EsInversion": False})
                     if tipo == "Ingreso":
@@ -98,6 +98,10 @@ def cargar_agosto_plan(path, narrativa):
         )
         contenido = {**narrativa, "fuentes_ingresos": fuentes, "egresos": egresos,
                      "semanas": semanas, "deuda": {**narrativa["deuda"], "monto": float(deuda)}}
+        contenido["deuda"]["partidas"] = [
+            {**partida, "monto": float(sum((dinero(partida["fila_excel"], col) for col in (3, 4, 5)), Decimal("0")))}
+            for partida in narrativa["deuda"]["partidas"]
+        ]
         return info, contenido
     finally:
         book.close()

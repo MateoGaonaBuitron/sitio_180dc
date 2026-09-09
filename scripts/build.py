@@ -424,22 +424,27 @@ def render_mes(info: InformeMes, slug: str, narrativa: dict, xlsx_filename: str,
     # ---- Pasivo (préstamo pendiente de reposición)
     deuda_html = ""
     if deuda:
+        partidas = deuda.get("partidas")
+        if partidas:
+            detalle_deuda = "".join(
+                f'<div class="info-box"><strong>{esc(p["titulo"])} — {fmt_soles(p["monto"])}</strong>'
+                f'{md(p["detalle"])}</div>' for p in partidas
+            )
+        else:
+            detalle_deuda = f'<div class="info-box"><strong>{esc(deuda["titulo"])}</strong>{md(deuda["detalle"])}</div>'
         deuda_html = f"""
     <section class="section">
       <div class="section-head">
         <div>
           <p class="section-eyebrow">Pasivo</p>
-          <h3 class="section-title-big">Préstamo pendiente</h3>
+          <h3 class="section-title-big">{esc(deuda.get("seccion_titulo", "Préstamo pendiente"))}</h3>
         </div>
         <div class="section-total" style="color:var(--ambar)">
           <span class="total-label">Deuda</span>
           <span class="total-value" style="color:var(--ambar)">{fmt_soles(deuda["monto"])}</span>
         </div>
       </div>
-      <div class="info-box">
-        <strong>{esc(deuda["titulo"])}</strong>
-        {md(deuda["detalle"])}
-      </div>
+      {detalle_deuda}
     </section>
     """
 

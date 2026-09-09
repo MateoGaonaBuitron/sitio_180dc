@@ -25,14 +25,15 @@ class PlanTests(unittest.TestCase):
         self.assertEqual(self.info.ingresos, 49)
         self.assertEqual(self.info.egresos_op, 22)
         self.assertEqual(self.info.saldo_final, 119.87)
-        self.assertEqual(self.narrativa["deuda"]["monto"], 305.5)
+        self.assertEqual(self.narrativa["deuda"]["monto"], 344.12)
+        self.assertEqual([p["monto"] for p in self.narrativa["deuda"]["partidas"]], [305.5, 38.62])
         self.assertEqual(len(self.info.df), 4)
         self.assertNotIn(38.62, self.info.df["Monto"].tolist())
         self.assertNotIn(305.5, self.info.df["Monto"].tolist())
 
     def test_conciliacion_y_detalle_semanal(self):
         semanas = self.narrativa["semanas"]
-        self.assertEqual([s["neto"] for s in semanas], [-212.63, -190.63, -185.63])
+        self.assertEqual([s["neto"] for s in semanas], [-251.25, -229.25, -224.25])
         self.assertEqual([s["disponible"] for s in semanas], [92.87, 114.87, 119.87])
         self.assertEqual(sum(x["monto"] for x in self.narrativa["fuentes_ingresos"]), self.info.ingresos)
         self.assertEqual(sum(x["monto"] for x in self.narrativa["egresos"]), self.info.egresos_op)
@@ -45,13 +46,17 @@ class PlanTests(unittest.TestCase):
         self.assertFalse((ROOT / "site/downloads/transacciones_agosto.xlsx").exists())
         html = (ROOT / "site/meses/agosto.html").read_text(encoding="utf-8")
         self.assertIn("S/ 119.87", html)
-        self.assertIn("S/ -185.63", html)
-        self.assertIn("no se ejecutó", html)
+        self.assertIn("S/ -224.25", html)
+        self.assertIn("Universidad del Pacífico (UP)", html)
+        self.assertIn("S/ 38.62", html)
+        self.assertNotIn("el Excel no especifica", html)
+        self.assertNotIn("Su registro no representa", html)
+        self.assertNotIn("no se ejecutó", html)
         self.assertIn('Responsable de actualización: <strong>Mateo Gaona</strong>', html)
         self.assertIn(SOURCE.name, html)
         calculo = html.split('<dl class="calc-list">', 1)[1].split('</dl>', 1)[0]
         self.assertLess(calculo.index("Egresos operativos"), calculo.index("Deuda pendiente"))
-        self.assertIn('Saldo final después de deuda</dt><dd>S/ -185.63</dd>', calculo)
+        self.assertIn('Saldo final después de deuda</dt><dd>S/ -224.25</dd>', calculo)
         self.assertIn('Disponible antes de deuda: <strong>S/ 119.87</strong>', html)
 
     def test_enlaces_locales(self):
@@ -72,8 +77,8 @@ class PlanTests(unittest.TestCase):
 
     def test_inicio_y_tarjeta_muestran_saldo_despues_de_deuda(self):
         html = (ROOT / "site/index.html").read_text(encoding="utf-8")
-        self.assertIn('<div class="hero-saldo-big">S/ -185.63</div>', html)
-        self.assertIn('<div class="mes-saldo-num">S/ -185.63</div>', html)
+        self.assertIn('<div class="hero-saldo-big">S/ -224.25</div>', html)
+        self.assertIn('<div class="mes-saldo-num">S/ -224.25</div>', html)
         self.assertIn('Saldo actual después de deuda', html)
         self.assertNotIn('class="hero-saldo-big">S/ 119.87', html)
         self.assertNotIn('class="mes-saldo-num">S/ 119.87', html)

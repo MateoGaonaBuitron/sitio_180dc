@@ -377,23 +377,23 @@ JULIO = {
 AGOSTO = {
     "responsable": "Mateo Gaona",
     "actualizacion": "09/09/2026",
-    "fuente_titulo": "Plan de Sostenibilidad Financiera 2026-II — Excel original",
-    "fuente_detalle": "Descarga el archivo completo. Agosto se obtiene de las semanas S1–S3 de la hoja Flujo de Caja. La deuda heredada se informa aparte de los pagos realizados. Consulta la conciliación semanal.",
-    "criterio_semanal": "Se respeta la agrupación del Excel: agosto comprende S1, S2 y S3, incluida la semana del 31/08 que se extiende a septiembre. Las fechas indican el inicio de la semana, no el día exacto de cada operación. El saldo del plan descuenta la deuda heredada; aquí se muestran por separado el disponible y el disponible menos deuda.",
+    "fuente_titulo": "Plan de Sostenibilidad Financiera 2026-II",
+    "fuente_detalle": "Registro semanal de ingresos, gastos y deudas pendientes del semestre.",
+    "criterio_semanal": "Resumen de agosto por semanas S1–S3, incluida la semana del 31 de agosto.",
     "nota_cierre": (
         "Agosto parte de **S/ 92.87 disponibles al 17 de agosto**. Los ingresos del stand y las rifas, "
         "menos los gastos de dulces del stand, aumentan el disponible. "
-        "La **deuda heredada del ciclo 2026-1 sigue pendiente** y se presenta por separado. "
-        "El pago de **S/ 38.62 programado para el 23 de agosto no se ejecutó**, por lo que se retiró del registro de gastos. "
-        "El archivo fuente comienza el 17 de agosto; no aporta un detalle de movimientos del 1 al 16."
+        "Quedan pendientes dos obligaciones del ciclo **2026-1** por el catering de 180 Talks: "
+        "el préstamo de Amanda Gomez y la deuda con la **Universidad del Pacífico (UP)**."
     ),
     "deuda": {
-        "titulo": "Catering — 180 Talks (deuda heredada del 2026-1)",
-        "detalle": (
-            "Adelanto de Amanda Gomez para el catering del 180 Talks de julio, pendiente de reposición. "
-            "El plan lo incorpora en S1 como DEUDA heredada del 2026-I. Su registro no representa "
-            "un nuevo desembolso de agosto; se descuenta únicamente al calcular el disponible menos deuda."
-        ),
+        "seccion_titulo": "Deudas pendientes",
+        "partidas": [
+            {"fila_excel": 27, "titulo": "Préstamo de Amanda Gomez",
+             "detalle": "Adelanto para el catering de 180 Talks 2026-1, pendiente de reposición."},
+            {"fila_excel": 29, "titulo": "Deuda con la Universidad del Pacífico (UP)",
+             "detalle": "Saldo pendiente por el catering de 180 Talks 2026-1."},
+        ],
     },
 }
 

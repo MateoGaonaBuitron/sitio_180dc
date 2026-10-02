@@ -77,7 +77,7 @@ class PlanTests(unittest.TestCase):
 
     def test_inicio_y_tarjeta_muestran_saldo_despues_de_deuda(self):
         html = (ROOT / "site/index.html").read_text(encoding="utf-8")
-        self.assertIn('<div class="hero-saldo-big">S/ -224.25</div>', html)
+        self.assertIn('<div class="hero-saldo-big">S/ 220.75</div>', html)
         self.assertIn('<div class="mes-saldo-num">S/ -224.25</div>', html)
         self.assertIn('Saldo actual después de deuda', html)
         self.assertNotIn('class="hero-saldo-big">S/ 119.87', html)

@@ -41,6 +41,7 @@ class InformeMes:
     df_egresos: pd.DataFrame       # solo egresos operativos
     df_inversion: pd.DataFrame
     df_ingresos: pd.DataFrame
+    pago_deuda: float = 0.0         # Reposición de préstamos, separada del gasto operativo
 
 
 def _excel_serial_to_date(v):

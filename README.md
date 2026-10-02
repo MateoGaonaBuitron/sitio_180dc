@@ -84,6 +84,17 @@ agosto permanecen en `config_mes.py`.
 
 ### Meses con el formato habitual
 
+**Septiembre 2026-2** se obtiene de `data/resumen_rifa_septiembre.xlsx` mediante
+`scripts/resumen_rifa.py`. El archivo original se publica íntegro para descarga.
+Se asigna a septiembre por el pago fechado 22/09/2026 y su caja inicial, que
+coincide con agosto. Los S/ 575 corresponden a la segunda parte de la rifa;
+no reemplazan ni se vuelven a sumar los ingresos registrados en meses anteriores.
+La caja cierra en S/ 259.37 tras S/ 130 de premios y S/ 305.50 de reposición
+a Amanda. Este pago cancela su préstamo; queda la deuda con la UP de S/ 38.62.
+El saldo después de deuda es S/ 220.75. Los pagos de deuda se muestran aparte
+de los egresos operativos. La fuente no precisa las fechas de ventas y premios.
+Para actualizar, conserva el formato y recalcula el Excel antes de generar.
+
 1. Abre el Excel del mes en `data/` (ej. `data/transacciones_mayo.xlsx`) y
    corrige lo que haga falta. Guarda.
 

@@ -12,6 +12,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 from helpers import cargar_mes, fmt_soles, InformeMes  # noqa: E402
 from config_mes import NARRATIVA  # noqa: E402
 from plan_sostenibilidad import cargar_agosto_plan  # noqa: E402
+from resumen_rifa import cargar_septiembre_rifa  # noqa: E402
 
 OUT_DIR = ROOT / "site"
 DATA_DIR = ROOT / "data"
@@ -42,6 +43,8 @@ CICLOS = [
         "meses": [
             {"mes": "Agosto", "slug": "agosto",
              "xlsx": "180DC_PUCP_Plan_Sostenibilidad_2026-II.xlsx", "formato": "plan_agosto"},
+            {"mes": "Septiembre", "slug": "septiembre", "xlsx": "resumen_rifa_septiembre.xlsx",
+             "formato": "resumen_rifa"},
         ],
     },
 ]
@@ -312,7 +315,7 @@ def render_mes(info: InformeMes, slug: str, narrativa: dict, xlsx_filename: str,
                meses_ciclo: list) -> str:
     # El plan semanal presenta el saldo después de la deuda pendiente.
     # El disponible de caja se conserva en InformeMes para no registrar un pago ficticio.
-    deuda_calculo = narrativa.get("deuda") if narrativa.get("semanas") else None
+    deuda_calculo = narrativa.get("deuda") if narrativa.get("semanas") or narrativa.get("saldo_despues_de_deuda") else None
     saldo_mostrado = round(info.saldo_final - (deuda_calculo["monto"] if deuda_calculo else 0), 2)
     saldo_titulo = "Saldo final después de deuda" if deuda_calculo else "Saldo final del mes"
     total_titulo = "Saldo final después de deuda" if deuda_calculo else "Saldo final"
@@ -323,6 +326,10 @@ def render_mes(info: InformeMes, slug: str, narrativa: dict, xlsx_filename: str,
     nota_disponible = (
         f'<p class="prose">Disponible antes de deuda: <strong>{fmt_soles(info.saldo_final)}</strong>. '
         'La deuda sigue pendiente de pago.</p>' if deuda_calculo else ""
+    )
+    fila_pago = (
+        f'<div class="op"><dt><span class="op-sign rojo">−</span> Pago de deuda</dt>'
+        f'<dd>{fmt_soles(info.pago_deuda)}</dd></div>' if info.pago_deuda else ""
     )
     # delta de saldo
     delta = saldo_mostrado - info.saldo_inicial
@@ -345,7 +352,7 @@ def render_mes(info: InformeMes, slug: str, narrativa: dict, xlsx_filename: str,
         <dl class="calc-list">
           <div><dt>Saldo inicial</dt><dd>{fmt_soles(info.saldo_inicial)}</dd></div>
           {"" if info.ingresos == 0 else f'<div class="op"><dt><span class="op-sign verde">+</span> Ingresos</dt><dd>{fmt_soles(info.ingresos)}</dd></div>'}
-          <div class="op"><dt><span class="op-sign rojo">−</span> Egresos operativos</dt><dd>{fmt_soles(info.egresos_op)}</dd></div>{fila_deuda}
+          <div class="op"><dt><span class="op-sign rojo">−</span> Egresos operativos</dt><dd>{fmt_soles(info.egresos_op)}</dd></div>{fila_pago}{fila_deuda}
           {"" if info.inversion == 0 else f'<div class="op"><dt><span class="op-sign ambar">−</span> Inversión IME</dt><dd>{fmt_soles(info.inversion)}</dd></div>'}
           <div class="total"><dt>{total_titulo}</dt><dd>{fmt_soles(saldo_mostrado)}</dd></div>
         </dl>
@@ -373,6 +380,8 @@ def render_mes(info: InformeMes, slug: str, narrativa: dict, xlsx_filename: str,
         <span class="stat-value ambar">{fmt_soles(info.inversion)}</span>
       </div>''')
     deuda = narrativa.get("deuda")
+    if info.pago_deuda:
+        stat_items.append(f'<div class="stat"><span class="stat-label">Pago de deuda</span><span class="stat-value rojo">{fmt_soles(info.pago_deuda)}</span></div>')
     if deuda:
         stat_items.append(f'''<div class="stat">
         <span class="stat-label">Deuda pendiente</span>
@@ -405,7 +414,7 @@ def render_mes(info: InformeMes, slug: str, narrativa: dict, xlsx_filename: str,
     filas_egreso = []
     for e in egresos_cfg:
         tipo = 'inv' if e.get('es_inversion') else 'op'
-        badge = 'Inversión IME' if e.get('es_inversion') else 'Operativo'
+        badge = 'Pago de deuda' if e.get('pago_deuda') else ('Inversión IME' if e.get('es_inversion') else 'Operativo')
         filas_egreso.append(render_fila(
             titulo=e['titulo'],
             monto=e['monto'],
@@ -419,7 +428,7 @@ def render_mes(info: InformeMes, slug: str, narrativa: dict, xlsx_filename: str,
         filas_egreso.append('<p class="muted">No se registran egresos en el mes.</p>')
 
     # ---- Subtotal headers
-    egresos_total = info.egresos_op + info.inversion
+    egresos_total = info.egresos_op + info.inversion + info.pago_deuda
 
     # ---- Pasivo (préstamo pendiente de reposición)
     deuda_html = ""
@@ -464,6 +473,10 @@ def render_mes(info: InformeMes, slug: str, narrativa: dict, xlsx_filename: str,
     cmp_labels = ["Ingresos", "Egresos op.", "Inversión"]
     cmp_values = [info.ingresos, info.egresos_op, info.inversion]
     cmp_colors = ["#7AB929", "#DC2626", "#F59E0B"]
+    if info.pago_deuda:
+        cmp_labels.append("Pago de deuda")
+        cmp_values.append(info.pago_deuda)
+        cmp_colors.append("#3B82F6")
     barras_svg = svg_barras(cmp_labels, cmp_values, cmp_colors)
 
     # ---- Análisis (pull-quote style)
@@ -586,7 +599,7 @@ def render_mes(info: InformeMes, slug: str, narrativa: dict, xlsx_filename: str,
 
     <section class="section">
       <p class="section-eyebrow">Visualización</p>
-      <h3 class="section-title-big">Distribución del gasto</h3>
+      <h3 class="section-title-big">{'Distribución de salidas' if info.pago_deuda else 'Distribución del gasto'}</h3>
       <div class="chart-grid">
         <div class="chart-block">
           <h4 class="chart-title">Egresos por categoría</h4>
@@ -632,12 +645,15 @@ def render_index(ciclos_render: list[dict]) -> str:
     total_ing = sum(i.ingresos for i in infos)
     total_eg = sum(i.egresos_op for i in infos)
     total_inv = sum(i.inversion for i in infos)
+    total_pagos = sum(i.pago_deuda for i in infos)
+    stat_pagos = (f'<div class="stat"><span class="stat-label">Pagos de deuda</span>'
+                  f'<span class="stat-value rojo">{fmt_soles(total_pagos)}</span></div>' if total_pagos else '')
     saldo_inicio = infos[0].saldo_inicial
     saldo_actual = infos[-1].saldo_final
     saldo_titulo = "Saldo actual"
     deuda_resumen = ""
     narrativa_actual = actual["meses"][-1].get("narrativa", {})
-    if narrativa_actual.get("semanas"):
+    if narrativa_actual.get("semanas") or narrativa_actual.get("saldo_despues_de_deuda"):
         deuda_actual = narrativa_actual["deuda"]["monto"]
         deuda_resumen = (
             f'<p class="prose">Disponible antes de deuda: <strong>{fmt_soles(saldo_actual)}</strong>. '
@@ -677,6 +693,7 @@ def render_index(ciclos_render: list[dict]) -> str:
     # ---- Stat strip
     stat_strip = f"""
     <div class="stat-strip stat-strip-index">
+      {stat_pagos}
       <div class="stat">
         <span class="stat-label">Saldo de inicio</span>
         <span class="stat-value">{fmt_soles(saldo_inicio)}</span>
@@ -707,7 +724,7 @@ def render_index(ciclos_render: list[dict]) -> str:
         contenido = cfg.get("narrativa", {})
         saldo_tarjeta = info.saldo_final
         titulo_tarjeta = "Saldo final"
-        if contenido.get("semanas"):
+        if contenido.get("semanas") or contenido.get("saldo_despues_de_deuda"):
             saldo_tarjeta = round(saldo_tarjeta - contenido["deuda"]["monto"], 2)
             titulo_tarjeta = "Saldo final después de deuda"
         delta_mes = saldo_tarjeta - info.saldo_inicial
@@ -731,6 +748,7 @@ def render_index(ciclos_render: list[dict]) -> str:
             </p>
           </div>
           <div class="mes-card-stats">
+            {'' if not info.pago_deuda else f'<div><span>Pago de deuda</span><b class="rojo">− {fmt_soles(info.pago_deuda)}</b></div>'}
             <div>
               <span>Ingresos</span>
               <b class="verde">+ {fmt_soles(info.ingresos)}</b>
@@ -870,6 +888,9 @@ def main():
             if cfg.get("formato") == "plan_agosto":
                 info, narrativa = cargar_agosto_plan(xlsx_path, NARRATIVA[cfg["mes"]])
                 cfg = {**cfg, "narrativa": narrativa}
+            elif cfg.get("formato") == "resumen_rifa":
+                info, narrativa = cargar_septiembre_rifa(xlsx_path, infos[-1], meses_ok[-1]["narrativa"]["deuda"])
+                cfg = {**cfg, "narrativa": narrativa}
             else:
                 info = cargar_mes(str(xlsx_path), cfg["mes"], ciclo=c["ciclo"])
             infos.append(info)
@@ -914,6 +935,7 @@ def main():
             print(f"{info.mes:8s}  Ingresos: {fmt_soles(info.ingresos)}  "
                   f"Egresos op.: {fmt_soles(info.egresos_op)}  "
                   f"Inv: {fmt_soles(info.inversion)}  "
+                  f"Pago de deuda: {fmt_soles(info.pago_deuda)}  "
                   f"Saldo final: {fmt_soles(info.saldo_final)}")
 
 
